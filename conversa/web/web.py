@@ -4,9 +4,9 @@ from threading import Thread
 
 import numpy as np
 
+from conversa.audio.speech_api import speech_to_text, text_to_speech
 from conversa.features.llm_api import call_llm
 from conversa.scenarios.talk import run_talk_scenario
-from conversa.speech_api import speech_to_text, text_to_speech
 from conversa.util.logs import setup_logging
 from conversa.web import server
 from conversa.web.io import WebInputStream, WebOutputStream

@@ -2,8 +2,8 @@ from dataclasses import dataclass, field
 
 import gradio as gr
 
+from conversa.audio.speech_api import speech_to_text, text_to_speech
 from conversa.features.llm_api import call_llm
-from conversa.speech_api import speech_to_text, text_to_speech
 
 
 @dataclass

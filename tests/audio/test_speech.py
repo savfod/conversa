@@ -10,7 +10,7 @@ import time
 import pytest
 
 from conversa.audio.input_stream import AudioFileInputStream
-from conversa.speech_api import speech_to_text, text_to_speech
+from conversa.audio.speech_api import speech_to_text, text_to_speech
 
 # def test_functions_raise_when_no_api_key(monkeypatch):
 #     """If OPENAI_API_KEY is not present, functions should raise RuntimeError."""
