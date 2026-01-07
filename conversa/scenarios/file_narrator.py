@@ -21,10 +21,10 @@ from ebooklib import ITEM_DOCUMENT, epub
 from conversa.audio.audio_parser import AudioParser
 from conversa.audio.input_stream import MicrophoneInputStream
 from conversa.audio.input_stream.base import AbstractAudioInputStream
+from conversa.audio.output_stream.base import AbstractAudioOutputStream
+from conversa.audio.output_stream.speaker import SpeakerOutputStream
+from conversa.audio.speech_api import speech_to_text, text_to_speech
 from conversa.features.llm_api import call_llm
-from conversa.generated.output_stream.base import AbstractAudioOutputStream
-from conversa.generated.output_stream.speaker import SpeakerOutputStream
-from conversa.generated.speech_api import speech_to_text, text_to_speech
 from conversa.util.io import DEFAULT_READING_STATUS, read_json, write_json
 from conversa.util.logs import get_logger
 
@@ -654,6 +654,7 @@ class FileNarrator:
             chunk_preprocessor = ChunkAsyncPreprocessor(
                 chunk_loader, self._content_processor, self.reading_status
             )
+            print(f"[DEBUG] has_more_chunks: {chunk_loader.has_more_chunks()}")
 
             for chunk in chunk_preprocessor:
                 if chunk is not None:

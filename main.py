@@ -1,8 +1,8 @@
 import argparse
 
 from conversa.audio.input_stream import AudioFileInputStream, MicrophoneInputStream
-from conversa.generated.output_stream.speaker import SpeakerOutputStream
-from conversa.generated.scenario.talk import run_talk_scenario
+from conversa.audio.output_stream.speaker import SpeakerOutputStream
+from conversa.scenarios.talk import run_talk_scenario
 from conversa.util.logs import setup_logging
 
 

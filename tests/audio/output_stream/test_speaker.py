@@ -6,10 +6,10 @@ from unittest.mock import MagicMock, patch
 
 import numpy as np
 
-from conversa.generated.output_stream.speaker import SpeakerOutputStream
+from conversa.audio.output_stream.speaker import SpeakerOutputStream
 
 
-@patch("conversa.generated.output_stream.speaker.sd.OutputStream")
+@patch("conversa.audio.output_stream.speaker.sd.OutputStream")
 class TestSpeakerOutputStream:
     """Test suite for SpeakerOutputStream class."""
 

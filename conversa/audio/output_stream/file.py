@@ -7,7 +7,7 @@ from pathlib import Path
 import numpy as np
 
 from conversa.audio.audio_io import save_audio
-from conversa.generated.output_stream.base import AbstractAudioOutputStream
+from conversa.audio.output_stream.base import AbstractAudioOutputStream
 
 
 class FileOutputStream(AbstractAudioOutputStream):

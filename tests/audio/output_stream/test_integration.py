@@ -15,7 +15,7 @@ import numpy as np
 import pytest
 import soundfile as sf
 
-from conversa.generated.output_stream import (
+from conversa.audio.output_stream import (
     AbstractAudioOutputStream,
     FileOutputStream,
     SpeakerOutputStream,
@@ -78,7 +78,7 @@ class TestIntegration:
             assert len(loaded_audio) == 24000  # 3 chunks of 8000 samples
 
     @pytest.mark.slow
-    @patch("conversa.generated.output_stream.speaker.sd.OutputStream")
+    @patch("conversa.audio.output_stream.speaker.sd.OutputStream")
     def test_speaker_stream_complete_workflow_slow(self, mock_output_stream):
         """Test complete workflow for speaker output stream."""
         mock_stream_instance = MagicMock()
@@ -180,7 +180,7 @@ class TestIntegration:
             assert np.allclose(loaded1, 0.1, rtol=1e-3, atol=1e-3)
             assert np.allclose(loaded2, 0.2, rtol=1e-3, atol=1e-3)
 
-    @patch("conversa.generated.output_stream.speaker.sd.OutputStream")
+    @patch("conversa.audio.output_stream.speaker.sd.OutputStream")
     def test_mixed_stream_types_independent(self, mock_output_stream):
         """Test that different stream types work independently."""
         mock_stream_instance = MagicMock()
@@ -251,7 +251,7 @@ class TestIntegration:
                 assert len(loaded_audio) == sr
 
     @pytest.mark.slow
-    @patch("conversa.generated.output_stream.speaker.sd.OutputStream")
+    @patch("conversa.audio.output_stream.speaker.sd.OutputStream")
     def test_speaker_stream_handles_different_sample_rates(self, mock_output_stream):
         """Test speaker stream with various sample rates."""
         sample_rates = [8000, 16000, 44100]

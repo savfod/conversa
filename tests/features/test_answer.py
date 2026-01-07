@@ -1,11 +1,11 @@
-"""Tests for conversa.scenarios.answer module."""
+"""Tests for conversa.features.answer module."""
 
 from unittest.mock import patch
 
-from conversa.scenarios.answer import teacher_answer
+from conversa.features.answer import teacher_answer
 
 
-@patch("conversa.scenarios.answer.call_llm")
+@patch("conversa.features.answer.call_llm")
 def test_teacher_answer_with_history(mock_call_llm):
     """Test teacher_answer with conversation history."""
     mock_call_llm.return_value = "That's interesting! What else?"

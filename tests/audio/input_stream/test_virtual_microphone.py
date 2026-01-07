@@ -3,7 +3,7 @@ import time
 import numpy as np
 
 from conversa.audio.input_stream.virtual import VirtualMicrophone
-from conversa.generated.output_stream.virtual import VirtualSpeaker
+from conversa.audio.output_stream.virtual import VirtualSpeaker
 
 
 def test_virtual_microphone_basic():

@@ -6,10 +6,10 @@ import numpy as np
 from conversa.audio.audio_io import save_audio
 from conversa.audio.audio_parser import AudioParser
 from conversa.audio.input_stream.base import AbstractAudioInputStream
+from conversa.audio.output_stream.base import AbstractAudioOutputStream
+from conversa.audio.speech_api import speech_to_text, text_to_speech
+from conversa.features.answer import teacher_answer
 from conversa.features.find_errors import check_for_errors
-from conversa.generated.output_stream.base import AbstractAudioOutputStream
-from conversa.generated.speech_api import speech_to_text, text_to_speech
-from conversa.scenarios.answer import teacher_answer
 from conversa.util.io import (
     DEFAULT_AUDIO_DIR,
     DEFAULT_CONVERSATIONS_FILE,

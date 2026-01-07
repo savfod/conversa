@@ -3,15 +3,15 @@ from unittest.mock import patch
 import numpy as np
 import pytest
 
-from conversa.generated.output_stream.file import FileOutputStream
-from conversa.generated.output_stream.speaker import SpeakerOutputStream
+from conversa.audio.output_stream.file import FileOutputStream
+from conversa.audio.output_stream.speaker import SpeakerOutputStream
 from conversa.web.io import WebOutputStream
 
 
 # Mock sounddevice to avoid actual audio hardware interaction
 @pytest.fixture
 def mock_sd():
-    with patch("conversa.generated.output_stream.speaker.sd") as mock:
+    with patch("conversa.audio.output_stream.speaker.sd") as mock:
         yield mock
 
 

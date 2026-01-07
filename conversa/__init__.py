@@ -10,7 +10,6 @@ Google-style docstring.
 __all__ = [
     "audio",
     "features",
-    "generated",
     "scenarios",
     "util",
     "web",

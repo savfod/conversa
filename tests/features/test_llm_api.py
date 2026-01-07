@@ -1,4 +1,4 @@
-"""Tests for conversa.generated.llm.
+"""Tests for conversa.features.llm.
 
 These tests monkeypatch a fake `openai` module to avoid network calls.
 """

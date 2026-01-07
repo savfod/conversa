@@ -10,7 +10,7 @@ import numpy as np
 import soundfile as sf
 
 from conversa.audio.input_stream.base import AbstractAudioInputStream
-from conversa.generated.output_stream.base import AbstractAudioOutputStream
+from conversa.audio.output_stream.base import AbstractAudioOutputStream
 from conversa.web import server
 
 

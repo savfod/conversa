@@ -25,11 +25,11 @@ from typing import Optional
 import numpy as np
 import soundfile as sf
 
+from conversa import speech_api
 from conversa.audio.input_stream import (
     AudioFileInputStream,
     MicrophoneInputStream,
 )
-from conversa.generated import speech_api
 
 
 def _save_array_to_wav(data: np.ndarray, sample_rate: int, out_path: Path) -> None:
