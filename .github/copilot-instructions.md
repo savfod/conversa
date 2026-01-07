@@ -10,7 +10,7 @@ Please follow these guidelines when updating or adding new code:
 
 0. If some prompt approach seems to be not good, please clearly state it and wait for confirmation
 
-1. Write code in a modular, profesional manner.
+1. Write code in a modular, professional manner.
 * Use type hints for all functions and methods
 * Include docstrings for all classes and functions using the Google style.
 * Follow PEP8 style guide (enforced by ruff in CI)
