@@ -25,3 +25,8 @@ Please follow these guidelines when updating or adding new code:
 4. Include docstrings for all classes and functions using the Google style.
 
 5. Make tests in tests directory for any new functionality added. Use pytest framework, avoid unittest unless absolutely necessary. Avoid line-by-line mocking; prefer really testing the logic.
+
+## Github workflow
+* feature development should be done in feature branches
+* the main branch is protected and requires PR reviews (at least 1 approval) before merging
+* dev branch is used for integration testing of multiple features before merging to main (squash merge)

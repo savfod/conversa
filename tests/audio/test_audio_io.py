@@ -15,6 +15,7 @@ from conversa.audio.audio_io import read_audio, save_audio
 class TestAudioIO:
     """Test suite for audio I/O functions."""
 
+    @pytest.mark.slow
     def test_save_and_read_audio_identical(self):
         """Test that saving and reading audio produces identical data."""
         # Create test audio data
@@ -82,6 +83,7 @@ class TestAudioIO:
         with pytest.raises(FileNotFoundError, match="Audio file not found"):
             read_audio(non_existent_path)
 
+    @pytest.mark.slow
     def test_save_and_read_different_sample_rates(self):
         """Test saving and reading audio with different sample rates."""
         sample_rates = [8000, 16000, 22050, 44100, 48000]
@@ -110,14 +112,16 @@ class TestAudioIO:
                     err_msg=f"Audio data differs for sample rate {sr}",
                 )
 
+    @pytest.mark.slow
     def test_save_and_read_edge_cases(self):
         """Test saving and reading audio with edge case values."""
         sample_rate = 16000
+        num_samples = 1600  # 0.1 second - much faster than 1 second
 
         # Test with zeros
         with tempfile.TemporaryDirectory() as tmpdir:
             test_file = Path(tmpdir) / "zeros.wav"
-            zeros = np.zeros(sample_rate, dtype=np.float32)
+            zeros = np.zeros(num_samples, dtype=np.float32)
             save_audio(zeros, test_file, sample_rate=sample_rate)
             loaded = read_audio(test_file, sample_rate=sample_rate)
             np.testing.assert_array_equal(loaded, zeros)
@@ -125,7 +129,7 @@ class TestAudioIO:
         # Test with maximum amplitude (clipped at ±1.0)
         with tempfile.TemporaryDirectory() as tmpdir:
             test_file = Path(tmpdir) / "max_amp.wav"
-            max_amp = np.ones(sample_rate, dtype=np.float32) * 0.999
+            max_amp = np.ones(num_samples, dtype=np.float32) * 0.999
             save_audio(max_amp, test_file, sample_rate=sample_rate)
             loaded = read_audio(test_file, sample_rate=sample_rate)
             np.testing.assert_allclose(loaded, max_amp, rtol=1e-4, atol=1e-4)

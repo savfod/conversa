@@ -236,9 +236,11 @@ def text_to_speech(
 
     speech_file_path = (
         Path(__file__).parent.parent.parent
-        / "audio"
+        / "conversa_audio"
         / f"speech_{datetime.now().strftime('%Y%m%d_%H%M%S')}.wav"
     )
+    # Ensure target directory exists
+    speech_file_path.parent.mkdir(parents=True, exist_ok=True)
     with client.audio.speech.with_streaming_response.create(
         model=model,
         voice=voice,
@@ -259,7 +261,11 @@ def text_to_speech(
 
     # Clean up the temporary file (keep for debugging during development)
     if not DEBUG:
-        speech_file_path.unlink()
+        try:
+            speech_file_path.unlink()
+        except FileNotFoundError:
+            # If the file was removed or not created, ignore
+            pass
 
     return data
 

@@ -15,13 +15,15 @@ from pathlib import Path
 from typing import Callable, Literal
 
 import numpy as np
-import sounddevice as sd
 from bs4 import BeautifulSoup
 from ebooklib import ITEM_DOCUMENT, epub
 
 from conversa.audio.audio_parser import AudioParser
 from conversa.audio.input_stream import MicrophoneInputStream
+from conversa.audio.input_stream.base import AbstractAudioInputStream
 from conversa.features.llm_api import call_llm
+from conversa.generated.output_stream.base import AbstractAudioOutputStream
+from conversa.generated.output_stream.speaker import SpeakerOutputStream
 from conversa.generated.speech_api import speech_to_text, text_to_speech
 from conversa.util.io import DEFAULT_READING_STATUS, read_json, write_json
 from conversa.util.logs import get_logger
@@ -39,18 +41,25 @@ class CommandListener:
 
     def __init__(
         self,
-        input_stream: MicrophoneInputStream | None = None,
+        input_stream: AbstractAudioInputStream | None = None,
+        output_stream: AbstractAudioOutputStream | None = None,
         audio_parser: AudioParser | None = None,
     ):
         """Initialize the command listener.
 
         Args:
-            input_stream: Microphone input stream for capturing audio (None for disabled mode)
+            input_stream: Audio input stream for capturing audio (None for disabled mode)
+            output_stream: Audio output stream for feedback (None for disabled mode)
             audio_parser: Audio parser for detecting voice commands (None for disabled mode)
         """
         self.input_stream = input_stream
+        self.output_stream = output_stream
         self.audio_parser = audio_parser
-        self.enabled = input_stream is not None and audio_parser is not None
+        self.enabled = (
+            input_stream is not None
+            and output_stream is not None
+            and audio_parser is not None
+        )
 
     def _start_waiting_loop(
         self,
@@ -162,15 +171,16 @@ class CommandListener:
                 # Handle LLM interaction
                 about_text = f"\n(about the text {context_text})"
                 llm_response = call_llm(
-                    query=f"""The user said the following (text to speech may have errors): "{transcription}" {about_text}.""",
+                    query=f"""The user asked the following (text to speech may have errors): "{transcription}" {about_text}.""",
                     sys_prompt="You are a helpful assistant.",
                 )
                 audio = text_to_speech(
                     llm_response,
                     instructions="Read the text in a clear and friendly tone.",
                 )
-                sd.play(audio, samplerate=16000)
-                sd.wait()
+                assert self.output_stream is not None
+                self.output_stream.play_chunk(audio)
+                self.output_stream.wait()
                 return "run_again"
 
 
@@ -486,8 +496,10 @@ class ChunkAsyncPreprocessor:
                 self._prepared_chunk = chunk
                 self._preparation_future = None
 
-            except Exception:
-                logger.exception("Error preparing chunk in background")
+            except Exception as e:
+                logger.exception(
+                    f"Error {e} preparing chunk in background, it'll be omitted"
+                )
                 self._preparation_future = None
 
         # chunk_loader -> chunk_to_prepare
@@ -572,6 +584,8 @@ class FileNarrator:
         target_language: str = "English",
         simplification_level: Literal["A1", "A2", "B1", "B2", "C1", "C2"] = "B1",
         enable_voice_control: bool = False,
+        input_stream: AbstractAudioInputStream | None = None,
+        output_stream: AbstractAudioOutputStream | None = None,
     ):
         """Initialize the file narrator.
 
@@ -582,6 +596,8 @@ class FileNarrator:
             target_language: Target language for simplification
             simplification_level: CEFR level for simplification (A1-C2)
             enable_voice_control: Enable voice commands for pause/resume control
+            input_stream: Audio input stream for voice control
+            output_stream: Audio output stream for playback
         """
         self.file_path = Path(file_path)
         self.chunk_size = chunk_size
@@ -592,38 +608,44 @@ class FileNarrator:
             target_language=target_language,
             simplification_level=simplification_level,
         )
+        self.input_stream = input_stream
+        self.output_stream = output_stream
 
-    @staticmethod
-    def _setup_voice_control(
-        enable_voice_control: bool,
-    ) -> tuple[CommandListener, MicrophoneInputStream | None]:
-        """Initialize voice-control helpers and return (command_listener, input_stream).
+    def _setup_voice_control(self) -> CommandListener:
+        """Initialize voice-control helpers and return command_listener.
 
-
-        When voice control is enabled this starts the microphone and creates the
-        AudioParser; otherwise returns a disabled CommandListener and None input stream.
+        Uses self.input_stream and self.output_stream if available.
         """
-        if enable_voice_control:
+        if self.enable_voice_control:
             print("Starting microphone for voice control...")
             print("Say 'start' to pause, then 'stop stop' to resume")
-            input_stream = MicrophoneInputStream(sample_rate=16000)
-            input_stream.start()
+
+            if self.input_stream is None:
+                self.input_stream = MicrophoneInputStream(sample_rate=16000)
+                self.input_stream.start()
+
             audio_parser = AudioParser(
                 model_path="vosk-model-small-en-us-0.15", sample_rate=16000
             )
-            command_listener = CommandListener(input_stream, audio_parser)
+            command_listener = CommandListener(
+                self.input_stream, self.output_stream, audio_parser
+            )
         else:
-            command_listener = CommandListener()  # Disabled mode
-            input_stream = None
-        return command_listener, input_stream
+            command_listener = CommandListener(
+                output_stream=self.output_stream
+            )  # Disabled mode
+
+        return command_listener
 
     def read_file(self) -> None:
         """Read the entire file using clean control flow architecture."""
-        input_stream = None
         try:
-            command_listener, input_stream = self._setup_voice_control(
-                self.enable_voice_control
-            )
+            # Ensure output stream
+            if self.output_stream is None:
+                self.output_stream = SpeakerOutputStream(sample_rate=16000)
+
+            command_listener = self._setup_voice_control()
+
             chunk_loader = FileChunkLoader(
                 file_path=self.file_path,
                 start_position=self.reading_status.get_last_position(),
@@ -635,11 +657,13 @@ class FileNarrator:
 
             for chunk in chunk_preprocessor:
                 if chunk is not None:
-                    sd.play(chunk.audio, samplerate=16000)
+                    # using output_stream instead of sd.play
+                    self.output_stream.play_chunk(chunk.audio)
 
                 def stop_condition() -> bool:
+                    assert self.output_stream is not None
                     return (
-                        chunk is None or not sd.get_stream().active
+                        chunk is None or not self.output_stream.is_playing()
                     ) and not chunk_preprocessor.is_preparation_active()
 
                 command = command_listener.run_voice_control_loop(
@@ -647,14 +671,24 @@ class FileNarrator:
                     if chunk is not None
                     else "[No text available]",
                     stop_condition_callback=stop_condition,
-                    on_start_detected_callback=lambda: sd.stop(),
+                    on_start_detected_callback=lambda: self.output_stream.stop(),  # Using stop on stream?
+                    # Note: sd.stop() stops playback. Stream.stop() might close stream.
+                    # We might want a way to just stop playback or pause?
+                    # SpeakerOutputStream.stop closes everything.
+                    # sd.stop() just stops the current playback?
+                    # If we use SpeakerOutputStream, we might not have a 'pause' or 'cancel current' easily.
+                    # But stopping the stream is fine if we restart it or if play_chunk handles it.
+                    # Actually SpeakerOutputStream.stop() sets _started=False. play_chunk restarts.
+                    # So calling stop() is okay if play_chunk handles restart.
                 )
                 chunk_preprocessor.command(command)
 
         finally:
-            if input_stream:
-                input_stream.stop()
+            if self.input_stream:
+                self.input_stream.stop()
                 print("Microphone stopped.")
+            if self.output_stream:
+                self.output_stream.stop()
 
 
 def main() -> None:
@@ -695,16 +729,31 @@ def main() -> None:
 
     args = parser.parse_args()
 
-    narrator = FileNarrator(
-        file_path=args.file_path,
-        chunk_size=args.chunk_size,
-        simplify=args.simplify,
-        target_language=args.language,
-        simplification_level=args.level,
-        enable_voice_control=args.voice_control,
-    )
+    output_stream = SpeakerOutputStream(sample_rate=16000)
+    input_stream = None
+    if args.voice_control:
+        input_stream = MicrophoneInputStream(
+            sample_rate=16000,
+        )
+        input_stream.start()
 
-    narrator.read_file()
+    try:
+        narrator = FileNarrator(
+            file_path=args.file_path,
+            chunk_size=args.chunk_size,
+            simplify=args.simplify,
+            target_language=args.language,
+            simplification_level=args.level,
+            enable_voice_control=args.voice_control,
+            input_stream=input_stream,
+            output_stream=output_stream,
+        )
+
+        narrator.read_file()
+    finally:
+        output_stream.stop()
+        if input_stream:
+            input_stream.stop()
 
 
 if __name__ == "__main__":

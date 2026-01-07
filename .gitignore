@@ -8,7 +8,7 @@ config.json
 models/*
 !models/models.md
 
-audio/speech_2025*
+conversa_audio/speech*
 
 # Mac :/
 .DS_Store

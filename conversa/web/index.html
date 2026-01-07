@@ -40,6 +40,7 @@
 
       // ====== PLAY AUDIO FROM SERVER ======
       const playbackCtx = new AudioContext();
+      let activeSources = [];
 
       socket.on("audio_out", async (arrayBuffer) => {
         const audioBuffer = await playbackCtx.decodeAudioData(
@@ -48,12 +49,30 @@
         const source = playbackCtx.createBufferSource();
         source.buffer = audioBuffer;
         source.connect(playbackCtx.destination);
+        source.onended = () => {
+          activeSources = activeSources.filter(s => s !== source);
+        };
+        activeSources.push(source);
         source.start();
+      });
+
+      socket.on("audio_stop", () => {
+        console.log("Stopping audio playback");
+        activeSources.forEach((source) => {
+          try {
+            source.stop();
+          } catch (e) {
+            // Ignore errors if already stopped
+          }
+        });
+        activeSources = [];
       });
     </script>
     <title>Conversa</title>
   </head>
+
   <body>
     <h1>Hello from the home page!</h1>
   </body>
+
 </html>
