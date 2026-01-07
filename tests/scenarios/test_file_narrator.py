@@ -6,7 +6,7 @@ from unittest.mock import MagicMock, patch
 import numpy as np
 import pytest
 
-from conversa.generated.file_narrator import (
+from conversa.file_narrator import (
     Chunk,
     ChunkAsyncPreprocessor,
     ContentProcessor,
@@ -126,7 +126,7 @@ class TestContentProcessorWithMocking:
         assert processor.target_language == "Deutsch"
         assert processor.simplification_level == "A2"
 
-    @patch("conversa.generated.file_narrator.call_llm")
+    @patch("conversa.file_narrator.call_llm")
     def test_simplify_text_calls_llm_with_correct_prompts(self, mock_llm):
         """Test that _simplify_text calls LLM with appropriate prompts."""
         mock_llm.return_value = "  Simplified text  "
@@ -160,7 +160,7 @@ class TestContentProcessorWithMocking:
         # Verify result is stripped
         assert result == "Simplified text"
 
-    @patch("conversa.generated.file_narrator.text_to_speech")
+    @patch("conversa.file_narrator.text_to_speech")
     def test_text_to_speech_calls_api_with_instructions(self, mock_tts):
         """Test that _text_to_speech calls API with correct instructions."""
         mock_audio = np.array([0.1, 0.2, 0.3])
@@ -189,7 +189,7 @@ class TestContentProcessorWithMocking:
         # Verify result matches mock
         np.testing.assert_array_equal(result, mock_audio)
 
-    @patch("conversa.generated.file_narrator.text_to_speech")
+    @patch("conversa.file_narrator.text_to_speech")
     def test_prepare_chunk_without_simplification(self, mock_tts, capsys):
         """Test prepare_chunk when simplification is disabled."""
         mock_audio = np.array([0.5, 0.6])
@@ -214,8 +214,8 @@ class TestContentProcessorWithMocking:
         assert "Chunk 1" in captured.out
         assert text in captured.out
 
-    @patch("conversa.generated.file_narrator.text_to_speech")
-    @patch("conversa.generated.file_narrator.call_llm")
+    @patch("conversa.file_narrator.text_to_speech")
+    @patch("conversa.file_narrator.call_llm")
     def test_prepare_chunk_with_simplification(self, mock_llm, mock_tts, capsys):
         """Test prepare_chunk when simplification is enabled."""
         mock_llm.return_value = "Simplified version"
@@ -247,8 +247,8 @@ class TestContentProcessorWithMocking:
         assert "Simplified version" in captured.out
         assert "Translated & Simplified text:" in captured.out
 
-    @patch("conversa.generated.file_narrator.text_to_speech")
-    @patch("conversa.generated.file_narrator.call_llm")
+    @patch("conversa.file_narrator.text_to_speech")
+    @patch("conversa.file_narrator.call_llm")
     def test_prepare_chunk_processes_in_correct_order(self, mock_llm, mock_tts):
         """Test that prepare_chunk calls simplification before TTS."""
         mock_llm.return_value = "Simplified"

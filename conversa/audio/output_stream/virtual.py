@@ -5,7 +5,7 @@ from typing import Optional
 
 import numpy as np
 
-from conversa.generated.output_stream.base import AbstractAudioOutputStream
+from conversa.audio.output_stream.base import AbstractAudioOutputStream
 
 
 class VirtualSpeaker(AbstractAudioOutputStream):

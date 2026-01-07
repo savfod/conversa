@@ -1,14 +1,14 @@
 import time
 from unittest.mock import MagicMock, patch
 
-from conversa.generated.output_stream.speaker import SpeakerOutputStream
+from conversa.audio.output_stream.speaker import SpeakerOutputStream
 
 
 def test_speaker_race_condition():
     """Test race condition during SpeakerOutputStream restart."""
 
     # Mock sounddevice
-    with patch("conversa.generated.output_stream.speaker.sd") as mock_sd:
+    with patch("conversa.audio.output_stream.speaker.sd") as mock_sd:
         # Create a stream mock that behaves somewhat realistically
         mock_stream = MagicMock()
         mock_sd.OutputStream.return_value = mock_stream

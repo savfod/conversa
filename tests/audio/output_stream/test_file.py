@@ -9,7 +9,7 @@ import numpy as np
 import pytest
 import soundfile as sf
 
-from conversa.generated.output_stream.file import FileOutputStream
+from conversa.audio.output_stream.file import FileOutputStream
 
 
 class TestFileOutputStream:

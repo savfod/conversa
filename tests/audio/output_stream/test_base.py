@@ -5,7 +5,7 @@ Tests for AbstractAudioOutputStream base class.
 import numpy as np
 import pytest
 
-from conversa.generated.output_stream.base import AbstractAudioOutputStream
+from conversa.audio.output_stream.base import AbstractAudioOutputStream
 
 
 class ConcreteAudioOutputStream(AbstractAudioOutputStream):

@@ -4,7 +4,7 @@ import time
 import numpy as np
 import pytest
 
-from conversa.generated.output_stream.speaker import SpeakerOutputStream
+from conversa.audio.output_stream.speaker import SpeakerOutputStream
 
 
 @pytest.mark.slow
