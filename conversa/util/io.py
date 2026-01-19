@@ -3,6 +3,7 @@ from pathlib import Path
 from typing import Any
 
 import appdirs
+import yaml
 
 APP_NAME = "conversa"
 DEFAULT_DATA_DIR = Path(appdirs.user_data_dir(APP_NAME))
@@ -10,6 +11,7 @@ DEFAULT_MISTAKES_FILE = DEFAULT_DATA_DIR / "mistakes.jsonl"
 DEFAULT_CONVERSATIONS_FILE = DEFAULT_DATA_DIR / "conversations.jsonl"
 DEFAULT_AUDIO_DIR = DEFAULT_DATA_DIR / "audios"
 DEFAULT_READING_STATUS = DEFAULT_DATA_DIR / "reading_status.json"
+DEFAULT_SETTINGS_FILE = DEFAULT_DATA_DIR / "settings.yaml"
 
 
 def append_to_jsonl_file(data: dict, fpath: Path) -> None:
@@ -77,3 +79,36 @@ def write_json(data: Any, fpath: str | Path) -> None:
     fpath.parent.mkdir(parents=True, exist_ok=True)
     with open(fpath, "w", encoding="utf-8") as f:
         json.dump(data, f, indent=4, ensure_ascii=False)
+
+
+def read_yaml(fpath: str | Path) -> dict:
+    """Read a YAML file.
+
+    Args:
+        fpath: Path to the YAML file.
+
+    Returns:
+        Dictionary with parsed YAML content, or empty dict if file is empty.
+
+    Raises:
+        FileNotFoundError: If file doesn't exist.
+    """
+    fpath = Path(fpath)
+    if not fpath.exists():
+        raise FileNotFoundError(f"YAML file not found: {fpath}")
+
+    with open(fpath, "r", encoding="utf-8") as f:
+        return yaml.safe_load(f) or {}
+
+
+def write_yaml(data: dict, fpath: str | Path) -> None:
+    """Write data to a YAML file.
+
+    Args:
+        data: Dictionary to write.
+        fpath: Path to the YAML file.
+    """
+    fpath = Path(fpath)
+    fpath.parent.mkdir(parents=True, exist_ok=True)
+    with open(fpath, "w", encoding="utf-8") as f:
+        yaml.dump(data, f, default_flow_style=False, allow_unicode=True)

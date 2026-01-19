@@ -18,6 +18,7 @@ dependencies = [
     "pytest>=9.0.0",
     "pytest-cov>=7.0.0",
     "python-dotenv>=1.2.1",
+    "pyyaml>=6.0",
     "sounddevice>=0.5.3",
     "soundfile>=0.13.1",
     "vosk==0.3.44",

@@ -1,8 +1,12 @@
+import pytest
+
 from conversa.util.io import (
     append_to_jsonl_file,
     read_json,
     read_jsonl_file,
+    read_yaml,
     write_json,
+    write_yaml,
 )
 
 
@@ -231,3 +235,55 @@ def test_jsonl_with_complex_objects(tmp_path):
     assert len(loaded_data) == 2
     assert loaded_data[0]["mistakes"][0]["word"] == "their"
     assert loaded_data[1]["mistakes"] == []
+
+
+def test_write_and_read_yaml(tmp_path):
+    """Test writing and reading a YAML file."""
+    test_data = {"name": "Alice", "age": 30, "hobbies": ["reading", "cycling"]}
+    file_path = tmp_path / "test.yaml"
+
+    write_yaml(test_data, file_path)
+
+    assert file_path.exists()
+    loaded_data = read_yaml(file_path)
+    assert loaded_data == test_data
+
+
+def test_write_yaml_creates_parent_directories(tmp_path):
+    """Test that write_yaml creates parent directories if they don't exist."""
+    test_data = {"key": "value"}
+    file_path = tmp_path / "nested" / "deep" / "test.yaml"
+
+    write_yaml(test_data, file_path)
+
+    assert file_path.exists()
+    loaded_data = read_yaml(file_path)
+    assert loaded_data == test_data
+
+
+def test_write_yaml_with_unicode(tmp_path):
+    """Test writing and reading YAML with Unicode characters."""
+    test_data = {"message": "Привет мир! 你好世界!", "emoji": "🌍"}
+    file_path = tmp_path / "unicode.yaml"
+
+    write_yaml(test_data, file_path)
+    loaded_data = read_yaml(file_path)
+
+    assert loaded_data == test_data
+
+
+def test_read_yaml_nonexistent(tmp_path):
+    """Test reading a non-existent YAML file raises FileNotFoundError."""
+    file_path = tmp_path / "nonexistent.yaml"
+
+    with pytest.raises(FileNotFoundError):
+        read_yaml(file_path)
+
+
+def test_read_yaml_empty_file(tmp_path):
+    """Test reading an empty YAML file returns empty dict."""
+    file_path = tmp_path / "empty.yaml"
+    file_path.touch()
+
+    loaded_data = read_yaml(file_path)
+    assert loaded_data == {}
