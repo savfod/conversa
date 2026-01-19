@@ -11,6 +11,7 @@ import soundfile as sf
 
 from conversa.audio.input_stream.base import AbstractAudioInputStream
 from conversa.audio.output_stream.base import AbstractAudioOutputStream
+from conversa.audio.stream_factory import register_input_stream, register_output_stream
 from conversa.web import server
 
 
@@ -122,3 +123,7 @@ class WebOutputStream(AbstractAudioOutputStream):
     def is_playing(self) -> bool:
         """Check if audio is currently playing."""
         return time.time() < self.last_chunk_finish_time
+
+
+register_input_stream("web", WebInputStream)
+register_output_stream("web", WebOutputStream)

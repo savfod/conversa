@@ -87,13 +87,19 @@ def test_file_narrator_defaults(tmp_path: Path):
     temp_file = tmp_path / "test.txt"
     temp_file.write_text(content)
 
-    with patch("conversa.scenarios.file_narrator.SpeakerOutputStream") as MockSpeaker:
+    with patch(
+        "conversa.scenarios.file_narrator.create_output_stream"
+    ) as mock_create_output:
+        mock_speaker = MagicMock()
+        mock_speaker.is_playing.return_value = False
+        mock_create_output.return_value = mock_speaker
+
         with patch("conversa.scenarios.file_narrator.ContentProcessor"):
             narrator = FileNarrator(
                 file_path=str(temp_file), enable_voice_control=False
             )
 
-            # read_file should create SpeakerOutputStream
+            # read_file should create output stream via factory
             # We mock CommandListener to avoid blocking
             with patch(
                 "conversa.scenarios.file_narrator.CommandListener"
@@ -112,4 +118,6 @@ def test_file_narrator_defaults(tmp_path: Path):
 
                     narrator.read_file()
 
-                    assert MockSpeaker.called
+                    mock_create_output.assert_called_once_with(
+                        "speaker", sample_rate=16000
+                    )

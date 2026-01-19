@@ -19,11 +19,10 @@ from bs4 import BeautifulSoup
 from ebooklib import ITEM_DOCUMENT, epub
 
 from conversa.audio.audio_parser import AudioParser
-from conversa.audio.input_stream import MicrophoneInputStream
 from conversa.audio.input_stream.base import AbstractAudioInputStream
 from conversa.audio.output_stream.base import AbstractAudioOutputStream
-from conversa.audio.output_stream.speaker import SpeakerOutputStream
 from conversa.audio.speech_api import speech_to_text, text_to_speech
+from conversa.audio.stream_factory import create_input_stream, create_output_stream
 from conversa.features.llm_api import call_llm
 from conversa.util.io import DEFAULT_READING_STATUS, read_json, write_json
 from conversa.util.logs import get_logger
@@ -621,7 +620,8 @@ class FileNarrator:
             print("Say 'start' to pause, then 'stop stop' to resume")
 
             if self.input_stream is None:
-                self.input_stream = MicrophoneInputStream(sample_rate=16000)
+                self.input_stream = create_input_stream("microphone", sample_rate=16000)
+
                 self.input_stream.start()
 
             audio_parser = AudioParser(
@@ -642,7 +642,7 @@ class FileNarrator:
         try:
             # Ensure output stream
             if self.output_stream is None:
-                self.output_stream = SpeakerOutputStream(sample_rate=16000)
+                self.output_stream = create_output_stream("speaker", sample_rate=16000)
 
             command_listener = self._setup_voice_control()
 
@@ -730,12 +730,11 @@ def main() -> None:
 
     args = parser.parse_args()
 
-    output_stream = SpeakerOutputStream(sample_rate=16000)
+    output_stream = create_output_stream("speaker", sample_rate=16000)
     input_stream = None
     if args.voice_control:
-        input_stream = MicrophoneInputStream(
-            sample_rate=16000,
-        )
+        input_stream = create_input_stream("microphone", sample_rate=16000)
+
         input_stream.start()
 
     try:

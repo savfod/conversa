@@ -5,11 +5,11 @@ from threading import Thread
 import numpy as np
 
 from conversa.audio.speech_api import speech_to_text, text_to_speech
+from conversa.audio.stream_factory import create_input_stream, create_output_stream
 from conversa.features.llm_api import call_llm
 from conversa.scenarios.talk import run_talk_scenario
 from conversa.util.logs import setup_logging
 from conversa.web import server
-from conversa.web.io import WebInputStream, WebOutputStream
 
 CHUNK_SIZE = 16000 * 5  # e.g. 5 second @ 16kHz
 
@@ -48,8 +48,8 @@ def audio_worker(debug: bool = False, language: str = "en") -> None:
         debug: If True, prints debug information.
     """
     # Initialize streams
-    input_stream = WebInputStream(sample_rate=16000, channels=1)
-    output_stream = WebOutputStream(sample_rate=16000, channels=1)
+    input_stream = create_input_stream("web", sample_rate=16000, channels=1)
+    output_stream = create_output_stream("web", sample_rate=16000, channels=1)
 
     if not debug:
         print("Starting production scenario (Web based)...")

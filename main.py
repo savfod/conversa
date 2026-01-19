@@ -1,7 +1,6 @@
 import argparse
 
-from conversa.audio.input_stream import AudioFileInputStream, MicrophoneInputStream
-from conversa.audio.output_stream.speaker import SpeakerOutputStream
+from conversa.audio.stream_factory import create_input_stream, create_output_stream
 from conversa.scenarios.talk import run_talk_scenario
 from conversa.util.logs import setup_logging
 
@@ -39,12 +38,12 @@ if __name__ == "__main__":
     # Create streams based on arguments
     if args.file:
         print("Starting AudioFileInputStream...")
-        input_stream = AudioFileInputStream(file_path=args.file)
+        input_stream = create_input_stream("file", file_path=args.file)
     else:
         print("Starting MicrophoneInputStream...")
-        input_stream = MicrophoneInputStream(sample_rate=16000)
+        input_stream = create_input_stream("microphone", sample_rate=16000)
 
-    output_stream = SpeakerOutputStream(sample_rate=16000)
+    output_stream = create_output_stream("speaker", sample_rate=16000)
 
     try:
         run_talk_scenario(input_stream, output_stream, language=args.language)

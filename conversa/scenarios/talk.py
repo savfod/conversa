@@ -101,7 +101,6 @@ def run_talk_scenario(
     audio_parser = AudioParser(
         model_path="vosk-model-small-en-us-0.15", sample_rate=16000
     )
-
     history: list[dict[str, str]] = []
     try:
         while True:
@@ -119,7 +118,7 @@ def run_talk_scenario(
                 print(".", end="", flush=True)
 
             if speech is not None:
-                print(f"\\nSpeech interval detected. Transcribing ({language})...")
+                print(f"\nSpeech interval detected. Transcribing ({language})...")
                 time_id = datetime.datetime.now().strftime("%Y%m%dT%H%M%S")
                 audio_file_path = DEFAULT_AUDIO_DIR / f"speech_{time_id}.wav"
                 save_audio(speech, audio_file_path, sample_rate=16000)
@@ -132,7 +131,7 @@ def run_talk_scenario(
 
                 errs_message = check_for_errors(transcription, time_str=time_id)
                 if errs_message:
-                    print(f"Errors found:\\n{errs_message}")
+                    print(f"Errors found:\n{errs_message}")
                     output_stream.play_chunk(
                         text_to_speech(
                             errs_message,
@@ -170,8 +169,8 @@ def run_talk_scenario(
         print("Input stream stopped.")
         print(
             "Text of the conversation can be found in the following file:"
-            f"\\nfile://{DEFAULT_CONVERSATIONS_FILE}"
-        )
+            f"\nfile://{DEFAULT_CONVERSATIONS_FILE}"
+        )  # not clickable without newline
         print(
-            f"Audio files saved in the following directory:\\nfile://{DEFAULT_AUDIO_DIR}"
-        )
+            f"Audio files saved in the following directory:\nfile://{DEFAULT_AUDIO_DIR}"
+        )  # not clickable without newline
