@@ -10,6 +10,7 @@ from conversa.audio.output_stream.base import AbstractAudioOutputStream
 from conversa.audio.speech_api import speech_to_text, text_to_speech
 from conversa.features.answer import teacher_answer
 from conversa.features.find_errors import check_for_errors
+from conversa.util.config import Config
 from conversa.util.io import (
     DEFAULT_AUDIO_DIR,
     DEFAULT_CONVERSATIONS_FILE,
@@ -79,7 +80,7 @@ def send_tone_signal(output_stream: AbstractAudioOutputStream, signal: str) -> N
 def run_talk_scenario(
     input_stream: AbstractAudioInputStream,
     output_stream: AbstractAudioOutputStream,
-    language: str = "en",
+    config: Config,
 ) -> None:
     """Run the main talk/discussion scenario.
 
@@ -90,11 +91,12 @@ def run_talk_scenario(
     Args:
         input_stream: Configured audio input stream.
         output_stream: Configured audio output stream.
-        language: Language code for speech recognition and processing.
+        config: Application configuration.
 
     Returns:
         None
     """
+    language = config.target_language
     input_stream.start()
     print("Stream started.")
 

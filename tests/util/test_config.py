@@ -100,6 +100,45 @@ def test_config_teacher_language_defaults_when_missing(tmp_path):
     assert config.teacher_language == "it"
 
 
+def test_config_invalid_target_language(tmp_path):
+    """Test that invalid target_language raises ValueError."""
+    import pytest
+
+    settings_path = tmp_path / "settings.yaml"
+    write_yaml({"target_language": "invalid", "level": "B1"}, settings_path)
+
+    with pytest.raises(ValueError, match="Unknown target_language"):
+        Config.load(settings_path)
+
+
+def test_config_invalid_teacher_language(tmp_path):
+    """Test that invalid teacher_language raises ValueError."""
+    import pytest
+
+    settings_path = tmp_path / "settings.yaml"
+    write_yaml(
+        {"target_language": "es", "teacher_language": "invalid", "level": "B1"},
+        settings_path,
+    )
+
+    with pytest.raises(ValueError, match="Unknown teacher_language"):
+        Config.load(settings_path)
+
+
+def test_config_language_name_property(tmp_path):
+    """Test target_language_name and teacher_language_name properties."""
+    settings_path = tmp_path / "settings.yaml"
+    write_yaml(
+        {"target_language": "es", "teacher_language": "en", "level": "B1"},
+        settings_path,
+    )
+
+    config = Config.load(settings_path)
+
+    assert config.target_language_name == "Spanish"
+    assert config.teacher_language_name == "English"
+
+
 def test_config_print_settings(tmp_path, capsys):
     """Test print_settings output."""
     settings_path = tmp_path / "settings.yaml"
@@ -112,6 +151,6 @@ def test_config_print_settings(tmp_path, capsys):
     config.print_settings()
 
     captured = capsys.readouterr()
-    assert "Target language: ja" in captured.out
-    assert "Teacher language: en" in captured.out
+    assert "Target language: Japanese (ja)" in captured.out
+    assert "Teacher language: English (en)" in captured.out
     assert "Level: A1" in captured.out

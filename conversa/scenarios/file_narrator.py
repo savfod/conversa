@@ -24,7 +24,13 @@ from conversa.audio.output_stream.base import AbstractAudioOutputStream
 from conversa.audio.speech_api import speech_to_text, text_to_speech
 from conversa.audio.stream_factory import create_input_stream, create_output_stream
 from conversa.features.llm_api import call_llm
-from conversa.util.io import DEFAULT_READING_STATUS, read_json, write_json
+from conversa.util.config import Config
+from conversa.util.io import (
+    DEFAULT_READING_STATUS,
+    DEFAULT_SETTINGS_FILE,
+    read_json,
+    write_json,
+)
 from conversa.util.logs import get_logger
 
 logger = get_logger(__name__)
@@ -712,23 +718,35 @@ def main() -> None:
     parser.add_argument(
         "--language",
         type=str,
-        default="English",
-        help="Target language for simplification (default: English)",
+        help="Target language for simplification (overrides config)",
     )
     parser.add_argument(
         "--level",
         type=str,
         choices=["A1", "A2", "B1", "B2", "C1", "C2"],
-        default="B1",
-        help="CEFR level for simplification (default: B1)",
+        help="CEFR level for simplification (overrides config)",
     )
     parser.add_argument(
         "--voice-control",
         action="store_true",
         help="Enable voice commands to pause/resume playback (say 'start' to pause, 'stop stop' to resume)",
     )
+    parser.add_argument(
+        "-c",
+        "--config",
+        type=Path,
+        default=DEFAULT_SETTINGS_FILE,
+        help=f"Path to config file (default: {DEFAULT_SETTINGS_FILE})",
+    )
 
     args = parser.parse_args()
+
+    config = Config.load(args.config)
+    config.print_settings()
+
+    # Use config values, allow CLI overrides
+    language = args.language or config.target_language_name
+    level = args.level or config.level
 
     output_stream = create_output_stream("speaker", sample_rate=16000)
     input_stream = None
@@ -742,8 +760,8 @@ def main() -> None:
             file_path=args.file_path,
             chunk_size=args.chunk_size,
             simplify=args.simplify,
-            target_language=args.language,
-            simplification_level=args.level,
+            target_language=language,
+            simplification_level=level,
             enable_voice_control=args.voice_control,
             input_stream=input_stream,
             output_stream=output_stream,
