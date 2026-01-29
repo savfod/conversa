@@ -629,7 +629,7 @@ class FileNarrator:
             if self.input_stream is None:
                 self.input_stream = create_input_stream("microphone", sample_rate=16000)
 
-                self.input_stream.start()
+            self.input_stream.start()
 
             audio_parser = AudioParser(
                 model_path="vosk-model-small-en-us-0.15", sample_rate=16000
@@ -725,9 +725,10 @@ class FileNarrator:
             help="CEFR level for simplification (overrides config)",
         )
         parser.add_argument(
-            "--voice-control",
+            "--no-voice-control",
             action="store_true",
-            help="Enable voice commands to pause/resume playback (say 'start' to pause, 'stop stop' to resume)",
+            dest="no_voice_control",
+            help="Disable voice commands (voice control is enabled by default)",
         )
 
 
@@ -768,7 +769,7 @@ class FileNarratorScenario(AbstractScenario):
             simplify=getattr(self.args, "simplify", False),
             target_language=language,
             simplification_level=level,
-            enable_voice_control=getattr(self.args, "voice_control", False),
+            enable_voice_control=not self.args.no_voice_control,
             input_stream=self.input_stream,
             output_stream=self.output_stream,
         )
@@ -804,8 +805,9 @@ def main() -> None:
     level = args.level or config.level
 
     output_stream = create_output_stream("speaker", sample_rate=16000)
+    enable_voice_control = not args.no_voice_control
     input_stream = None
-    if args.voice_control:
+    if enable_voice_control:
         input_stream = create_input_stream("microphone", sample_rate=16000)
 
         input_stream.start()
@@ -817,7 +819,7 @@ def main() -> None:
             simplify=args.simplify,
             target_language=language,
             simplification_level=level,
-            enable_voice_control=args.voice_control,
+            enable_voice_control=enable_voice_control,
             input_stream=input_stream,
             output_stream=output_stream,
         )

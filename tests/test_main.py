@@ -97,6 +97,30 @@ class TestBuildParser:
         assert args.share is True
         assert args.port == 7777
 
+    def test_file_narrate_voice_control_default_enabled(self, parser):
+        """Voice control should be enabled by default (no_voice_control=False)."""
+        args = parser.parse_args(["cli", "file_narrate", "test.txt"])
+        assert args.no_voice_control is False
+
+    def test_file_narrate_no_voice_control_flag(self, parser):
+        """--no-voice-control should disable voice control."""
+        args = parser.parse_args(
+            ["cli", "file_narrate", "test.txt", "--no-voice-control"]
+        )
+        assert args.no_voice_control is True
+
+    def test_file_narrate_chunk_size_optional(self, parser):
+        """--chunk-size should have a default value."""
+        args = parser.parse_args(["cli", "file_narrate", "test.txt"])
+        assert args.chunk_size == 500
+
+    def test_file_narrate_chunk_size_override(self, parser):
+        """--chunk-size should be overridable."""
+        args = parser.parse_args(
+            ["cli", "file_narrate", "test.txt", "--chunk-size", "1000"]
+        )
+        assert args.chunk_size == 1000
+
 
 class TestResolveStreamArgs:
     """Tests for _resolve_stream_args function."""
