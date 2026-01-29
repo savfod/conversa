@@ -24,6 +24,7 @@ from conversa.audio.output_stream.base import AbstractAudioOutputStream
 from conversa.audio.speech_api import speech_to_text, text_to_speech
 from conversa.audio.stream_factory import create_input_stream, create_output_stream
 from conversa.features.llm_api import call_llm
+from conversa.scenarios.base import AbstractScenario
 from conversa.util.config import Config
 from conversa.util.io import (
     DEFAULT_READING_STATUS,
@@ -697,40 +698,94 @@ class FileNarrator:
             if self.output_stream:
                 self.output_stream.stop()
 
+    @staticmethod
+    def add_arguments(parser: argparse.ArgumentParser) -> None:
+        """Add arguments for FileNarrator to the parser."""
+        parser.add_argument("file_path", type=str, help="Path to the file to read")
+        parser.add_argument(
+            "--chunk-size",
+            type=int,
+            default=500,
+            help="Number of characters per chunk (default: 500)",
+        )
+        parser.add_argument(
+            "--simplify",
+            action="store_true",
+            help="Simplify the text to a target language level",
+        )
+        parser.add_argument(
+            "--language",
+            type=str,
+            help="Target language for simplification (overrides config)",
+        )
+        parser.add_argument(
+            "--level",
+            type=str,
+            choices=["A1", "A2", "B1", "B2", "C1", "C2"],
+            help="CEFR level for simplification (overrides config)",
+        )
+        parser.add_argument(
+            "--voice-control",
+            action="store_true",
+            help="Enable voice commands to pause/resume playback (say 'start' to pause, 'stop stop' to resume)",
+        )
+
+
+class FileNarratorScenario(AbstractScenario):
+    """Scenario wrapper for FileNarrator.
+
+    Provides the AbstractScenario interface for the FileNarrator functionality.
+    """
+
+    def __init__(
+        self,
+        input_stream: AbstractAudioInputStream,
+        output_stream: AbstractAudioOutputStream,
+        config: Config,
+        args: argparse.Namespace,
+    ):
+        """Initialize the file narrator scenario.
+
+        Args:
+            input_stream: Audio input stream for voice control.
+            output_stream: Audio output stream for playback.
+            config: Application configuration.
+            args: Parsed command-line arguments (must include file_path).
+        """
+        super().__init__(input_stream, output_stream, config, args)
+
+    def start(self) -> None:
+        """Start the file narrator scenario."""
+        # Use config values, allow CLI overrides
+        language = (
+            getattr(self.args, "language", None) or self.config.target_language_name
+        )
+        level = getattr(self.args, "level", None) or self.config.level
+
+        narrator = FileNarrator(
+            file_path=self.args.file_path,
+            chunk_size=getattr(self.args, "chunk_size", 500),
+            simplify=getattr(self.args, "simplify", False),
+            target_language=language,
+            simplification_level=level,
+            enable_voice_control=getattr(self.args, "voice_control", False),
+            input_stream=self.input_stream,
+            output_stream=self.output_stream,
+        )
+        narrator.read_file()
+
+    @staticmethod
+    def add_arguments(parser: argparse.ArgumentParser) -> None:
+        """Add arguments for the file narrator scenario."""
+        FileNarrator.add_arguments(parser)
+
 
 def main() -> None:
     """Main entry point for command-line usage."""
     parser = argparse.ArgumentParser(
         description="Read and process text files with optional simplification and TTS"
     )
-    parser.add_argument("file_path", type=str, help="Path to the file to read")
-    parser.add_argument(
-        "--chunk-size",
-        type=int,
-        default=500,
-        help="Number of characters per chunk (default: 500)",
-    )
-    parser.add_argument(
-        "--simplify",
-        action="store_true",
-        help="Simplify the text to a target language level",
-    )
-    parser.add_argument(
-        "--language",
-        type=str,
-        help="Target language for simplification (overrides config)",
-    )
-    parser.add_argument(
-        "--level",
-        type=str,
-        choices=["A1", "A2", "B1", "B2", "C1", "C2"],
-        help="CEFR level for simplification (overrides config)",
-    )
-    parser.add_argument(
-        "--voice-control",
-        action="store_true",
-        help="Enable voice commands to pause/resume playback (say 'start' to pause, 'stop stop' to resume)",
-    )
+    FileNarrator.add_arguments(parser)
     parser.add_argument(
         "-c",
         "--config",

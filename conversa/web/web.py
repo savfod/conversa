@@ -1,3 +1,5 @@
+"""Web (Flask/SocketIO) interface runner for conversa."""
+
 import argparse
 import time
 from pathlib import Path
@@ -5,9 +7,11 @@ from threading import Thread
 
 import numpy as np
 
+import conversa.web.io  # noqa: F401 - registers web streams
 from conversa.audio.speech_api import speech_to_text, text_to_speech
 from conversa.audio.stream_factory import create_input_stream, create_output_stream
 from conversa.features.llm_api import call_llm
+from conversa.scenarios.scenario_factory import create_scenario
 from conversa.scenarios.talk import run_talk_scenario
 from conversa.util.config import Config
 from conversa.util.io import DEFAULT_SETTINGS_FILE
@@ -15,6 +19,33 @@ from conversa.util.logs import setup_logging
 from conversa.web import server
 
 CHUNK_SIZE = 16000 * 5  # e.g. 5 second @ 16kHz
+
+
+def run(args: argparse.Namespace, config: Config) -> None:
+    """Run scenario with web streams (Flask/SocketIO).
+
+    Args:
+        args: Parsed command-line arguments containing scenario name,
+              host, and port.
+        config: Application configuration.
+    """
+
+    def worker() -> None:
+        input_stream = create_input_stream("web", sample_rate=16000, channels=1)
+        output_stream = create_output_stream("web", sample_rate=16000, channels=1)
+        scenario = create_scenario(
+            args.scenario, input_stream, output_stream, config, args
+        )
+        try:
+            scenario.start()
+        except KeyboardInterrupt:
+            scenario.stop()
+        finally:
+            input_stream.stop()
+            output_stream.stop()
+
+    Thread(target=worker, daemon=True).start()
+    server.run_server(host=args.host, port=args.port)
 
 
 def process_audio(full_audio: np.ndarray, debug: bool = False) -> np.ndarray | None:
