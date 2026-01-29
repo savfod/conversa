@@ -41,7 +41,7 @@ class TestPackageImports:
         """Test that FileOutputStream can be instantiated."""
         with tempfile.TemporaryDirectory() as tmpdir:
             output_path = Path(tmpdir) / "test.wav"
-            stream = FileOutputStream(output_path=output_path)
+            stream = FileOutputStream(file_path=output_path)
             assert stream is not None
             assert isinstance(stream, AbstractAudioOutputStream)
 
@@ -53,7 +53,7 @@ class TestIntegration:
         """Test complete workflow for file output stream."""
         with tempfile.TemporaryDirectory() as tmpdir:
             output_path = Path(tmpdir) / "integration_test.wav"
-            stream = FileOutputStream(output_path=output_path, sample_rate=16000)
+            stream = FileOutputStream(file_path=output_path, sample_rate=16000)
 
             # Generate test audio
             chunks = []
@@ -144,7 +144,7 @@ class TestIntegration:
             output_path = Path(tmpdir) / "test.wav"
 
             streams = [
-                FileOutputStream(output_path=output_path),
+                FileOutputStream(file_path=output_path),
                 SpeakerOutputStream(),
             ]
 
@@ -160,8 +160,8 @@ class TestIntegration:
             output_path1 = Path(tmpdir) / "test1.wav"
             output_path2 = Path(tmpdir) / "test2.wav"
 
-            stream1 = FileOutputStream(output_path=output_path1)
-            stream2 = FileOutputStream(output_path=output_path2)
+            stream1 = FileOutputStream(file_path=output_path1)
+            stream2 = FileOutputStream(file_path=output_path2)
 
             # Play different audio to each stream (use values in proper float32 range)
             audio1 = np.ones(1600, dtype=np.float32) * 0.1
@@ -190,7 +190,7 @@ class TestIntegration:
             output_path = Path(tmpdir) / "test.wav"
 
             # Create both types of streams
-            file_stream = FileOutputStream(output_path=output_path)
+            file_stream = FileOutputStream(file_path=output_path)
             sound_stream = SpeakerOutputStream()
 
             # Play audio to both
@@ -216,7 +216,7 @@ class TestIntegration:
             output_path = Path(tmpdir) / "test.wav"
 
             streams = [
-                FileOutputStream(output_path=output_path),
+                FileOutputStream(file_path=output_path),
                 SpeakerOutputStream(),
             ]
 
@@ -238,7 +238,7 @@ class TestIntegration:
 
             for sr in sample_rates:
                 output_path = Path(tmpdir) / f"test_{sr}.wav"
-                stream = FileOutputStream(output_path=output_path, sample_rate=sr)
+                stream = FileOutputStream(file_path=output_path, sample_rate=sr)
 
                 # Generate 1 second of audio
                 audio_data = np.random.randn(sr).astype(np.float32)

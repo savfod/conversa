@@ -21,18 +21,38 @@ from conversa.web import server
 CHUNK_SIZE = 16000 * 5  # e.g. 5 second @ 16kHz
 
 
+DEFAULT_SAMPLE_RATE = 16000
+
+
 def run(args: argparse.Namespace, config: Config) -> None:
-    """Run scenario with web streams (Flask/SocketIO).
+    """Run scenario with configurable streams.
 
     Args:
-        args: Parsed command-line arguments containing scenario name,
-              host, and port.
+        args: Parsed command-line arguments containing:
+              - scenario: scenario name
+              - input_type, input_kwargs: input stream config
+              - output_type, output_kwargs: output stream config
+              - host, port: server config
         config: Application configuration.
     """
 
     def worker() -> None:
-        input_stream = create_input_stream("web", sample_rate=16000, channels=1)
-        output_stream = create_output_stream("web", sample_rate=16000, channels=1)
+        # Build input stream kwargs with defaults
+        input_kwargs = {
+            "sample_rate": DEFAULT_SAMPLE_RATE,
+            "channels": 1,
+            **args.input_kwargs,
+        }
+        input_stream = create_input_stream(args.input_type, **input_kwargs)
+
+        # Build output stream kwargs with defaults
+        output_kwargs = {
+            "sample_rate": DEFAULT_SAMPLE_RATE,
+            "channels": 1,
+            **args.output_kwargs,
+        }
+        output_stream = create_output_stream(args.output_type, **output_kwargs)
+
         scenario = create_scenario(
             args.scenario, input_stream, output_stream, config, args
         )

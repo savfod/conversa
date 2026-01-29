@@ -19,11 +19,11 @@ class TestFileOutputStream:
         """Test FileOutputStream initialization."""
         with tempfile.TemporaryDirectory() as tmpdir:
             output_path = Path(tmpdir) / "test.wav"
-            stream = FileOutputStream(output_path=output_path)
+            stream = FileOutputStream(file_path=output_path)
 
             assert stream.sample_rate == 16000
             assert stream.channels == 1
-            assert stream.output_path == output_path
+            assert stream.file_path == output_path
             assert stream._is_closed is False
             assert len(stream._audio_chunks) == 0
 
@@ -32,7 +32,7 @@ class TestFileOutputStream:
         with tempfile.TemporaryDirectory() as tmpdir:
             output_path = Path(tmpdir) / "test.wav"
             stream = FileOutputStream(
-                output_path=output_path, sample_rate=8000, channels=2
+                file_path=output_path, sample_rate=8000, channels=2
             )
 
             assert stream.sample_rate == 8000
@@ -42,7 +42,7 @@ class TestFileOutputStream:
         """Test that initialization creates parent directories."""
         with tempfile.TemporaryDirectory() as tmpdir:
             output_path = Path(tmpdir) / "subdir" / "test.wav"
-            _stream = FileOutputStream(output_path=output_path)
+            _stream = FileOutputStream(file_path=output_path)
 
             assert output_path.parent.exists()
 
@@ -50,7 +50,7 @@ class TestFileOutputStream:
         """Test adding audio chunks."""
         with tempfile.TemporaryDirectory() as tmpdir:
             output_path = Path(tmpdir) / "test.wav"
-            stream = FileOutputStream(output_path=output_path)
+            stream = FileOutputStream(file_path=output_path)
 
             audio_data = np.random.randn(1600).astype(np.float32)
             stream.play_chunk(audio_data)
@@ -62,7 +62,7 @@ class TestFileOutputStream:
         """Test adding multiple audio chunks."""
         with tempfile.TemporaryDirectory() as tmpdir:
             output_path = Path(tmpdir) / "test.wav"
-            stream = FileOutputStream(output_path=output_path)
+            stream = FileOutputStream(file_path=output_path)
 
             for _ in range(3):
                 audio_data = np.random.randn(800).astype(np.float32)
@@ -74,7 +74,7 @@ class TestFileOutputStream:
         """Test that stop saves audio to file."""
         with tempfile.TemporaryDirectory() as tmpdir:
             output_path = Path(tmpdir) / "test.wav"
-            stream = FileOutputStream(output_path=output_path)
+            stream = FileOutputStream(file_path=output_path)
 
             # Add some audio
             audio_data = np.random.randn(16000).astype(np.float32)  # 1 second
@@ -91,7 +91,7 @@ class TestFileOutputStream:
         """Test that saved file contains correct audio data."""
         with tempfile.TemporaryDirectory() as tmpdir:
             output_path = Path(tmpdir) / "test.wav"
-            stream = FileOutputStream(output_path=output_path, sample_rate=16000)
+            stream = FileOutputStream(file_path=output_path, sample_rate=16000)
 
             # Create known audio data
             audio_data = np.sin(2 * np.pi * 440 * np.arange(16000) / 16000).astype(
@@ -110,7 +110,7 @@ class TestFileOutputStream:
         """Test that multiple chunks are concatenated correctly."""
         with tempfile.TemporaryDirectory() as tmpdir:
             output_path = Path(tmpdir) / "test.wav"
-            stream = FileOutputStream(output_path=output_path)
+            stream = FileOutputStream(file_path=output_path)
 
             # Use values within [-1, 1] range for proper float32 WAV encoding
             chunks = [
@@ -141,7 +141,7 @@ class TestFileOutputStream:
         """Test that wait() also saves the file."""
         with tempfile.TemporaryDirectory() as tmpdir:
             output_path = Path(tmpdir) / "test.wav"
-            stream = FileOutputStream(output_path=output_path)
+            stream = FileOutputStream(file_path=output_path)
 
             audio_data = np.random.randn(1600).astype(np.float32)
             stream.play_chunk(audio_data)
@@ -157,7 +157,7 @@ class TestFileOutputStream:
         """Test getting total duration of buffered audio."""
         with tempfile.TemporaryDirectory() as tmpdir:
             output_path = Path(tmpdir) / "test.wav"
-            stream = FileOutputStream(output_path=output_path, sample_rate=16000)
+            stream = FileOutputStream(file_path=output_path, sample_rate=16000)
 
             # Add 1 second of audio
             audio_data = np.random.randn(16000).astype(np.float32)
@@ -170,7 +170,7 @@ class TestFileOutputStream:
         """Test duration calculation with multiple chunks."""
         with tempfile.TemporaryDirectory() as tmpdir:
             output_path = Path(tmpdir) / "test.wav"
-            stream = FileOutputStream(output_path=output_path, sample_rate=16000)
+            stream = FileOutputStream(file_path=output_path, sample_rate=16000)
 
             # Add 3 chunks of 0.5 seconds each
             for _ in range(3):
@@ -184,7 +184,7 @@ class TestFileOutputStream:
         """Test duration when no audio has been added."""
         with tempfile.TemporaryDirectory() as tmpdir:
             output_path = Path(tmpdir) / "test.wav"
-            stream = FileOutputStream(output_path=output_path)
+            stream = FileOutputStream(file_path=output_path)
 
             duration = stream.get_total_duration()
             assert duration == 0.0
@@ -193,7 +193,7 @@ class TestFileOutputStream:
         """Test getting chunk count."""
         with tempfile.TemporaryDirectory() as tmpdir:
             output_path = Path(tmpdir) / "test.wav"
-            stream = FileOutputStream(output_path=output_path)
+            stream = FileOutputStream(file_path=output_path)
 
             assert stream.get_chunk_count() == 0
 
@@ -205,7 +205,7 @@ class TestFileOutputStream:
         """Test that stopping with no chunks shows a warning."""
         with tempfile.TemporaryDirectory() as tmpdir:
             output_path = Path(tmpdir) / "test.wav"
-            stream = FileOutputStream(output_path=output_path)
+            stream = FileOutputStream(file_path=output_path)
 
             stream.stop()
 
@@ -218,7 +218,7 @@ class TestFileOutputStream:
         """Test that play_chunk after stop raises assertion error."""
         with tempfile.TemporaryDirectory() as tmpdir:
             output_path = Path(tmpdir) / "test.wav"
-            stream = FileOutputStream(output_path=output_path)
+            stream = FileOutputStream(file_path=output_path)
 
             stream.stop()
 
@@ -231,7 +231,7 @@ class TestFileOutputStream:
         """Test that empty arrays raise an assertion error."""
         with tempfile.TemporaryDirectory() as tmpdir:
             output_path = Path(tmpdir) / "test.wav"
-            stream = FileOutputStream(output_path=output_path)
+            stream = FileOutputStream(file_path=output_path)
 
             with pytest.raises(AssertionError):
                 stream.play_chunk(np.array([]))
@@ -240,7 +240,7 @@ class TestFileOutputStream:
         """Test that None raises an assertion error."""
         with tempfile.TemporaryDirectory() as tmpdir:
             output_path = Path(tmpdir) / "test.wav"
-            stream = FileOutputStream(output_path=output_path)
+            stream = FileOutputStream(file_path=output_path)
 
             with pytest.raises(AssertionError):
                 stream.play_chunk(None)
@@ -249,7 +249,7 @@ class TestFileOutputStream:
         """Test that calling stop twice is safe."""
         with tempfile.TemporaryDirectory() as tmpdir:
             output_path = Path(tmpdir) / "test.wav"
-            stream = FileOutputStream(output_path=output_path)
+            stream = FileOutputStream(file_path=output_path)
 
             audio_data = np.random.randn(1600).astype(np.float32)
             stream.play_chunk(audio_data)
@@ -267,15 +267,15 @@ class TestFileOutputStream:
         """Test that string paths are converted to Path objects."""
         with tempfile.TemporaryDirectory() as tmpdir:
             output_path = str(Path(tmpdir) / "test.wav")
-            stream = FileOutputStream(output_path=output_path)
+            stream = FileOutputStream(file_path=output_path)
 
-            assert isinstance(stream.output_path, Path)
+            assert isinstance(stream.file_path, Path)
 
     def test_stereo_output(self):
         """Test saving stereo audio."""
         with tempfile.TemporaryDirectory() as tmpdir:
             output_path = Path(tmpdir) / "test_stereo.wav"
-            stream = FileOutputStream(output_path=output_path, channels=2)
+            stream = FileOutputStream(file_path=output_path, channels=2)
 
             # Add mono audio (should be duplicated to stereo)
             audio_data = np.random.randn(1600).astype(np.float32)
@@ -292,10 +292,10 @@ class TestFileOutputStream:
         with tempfile.TemporaryDirectory() as tmpdir:
             # Create a valid stream first
             output_path = Path(tmpdir) / "test.wav"
-            stream = FileOutputStream(output_path=output_path)
+            stream = FileOutputStream(file_path=output_path)
 
             # Make the file path invalid after initialization
-            stream.output_path = Path("/invalid/path/that/does/not/exist/test.wav")
+            stream.file_path = Path("/invalid/path/that/does/not/exist/test.wav")
 
             audio_data = np.random.randn(1600).astype(np.float32)
             stream.play_chunk(audio_data)

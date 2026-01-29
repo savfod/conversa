@@ -6,21 +6,26 @@ from conversa.audio.stream_factory import create_input_stream, create_output_str
 from conversa.scenarios.scenario_factory import create_scenario
 from conversa.util.config import Config
 
+DEFAULT_SAMPLE_RATE = 16000
+
 
 def run(args: argparse.Namespace, config: Config) -> None:
-    """Run scenario with CLI streams (microphone/speaker or file).
+    """Run scenario with configurable streams.
 
     Args:
-        args: Parsed command-line arguments containing scenario name
-              and optional input_file.
+        args: Parsed command-line arguments containing:
+              - scenario: scenario name
+              - input_type, input_kwargs: input stream config
+              - output_type, output_kwargs: output stream config
         config: Application configuration.
     """
-    if args.input_file:
-        input_stream = create_input_stream("file", file_path=args.input_file)
-    else:
-        input_stream = create_input_stream("microphone", sample_rate=16000)
+    # Build input stream kwargs with defaults
+    input_kwargs = {"sample_rate": DEFAULT_SAMPLE_RATE, **args.input_kwargs}
+    input_stream = create_input_stream(args.input_type, **input_kwargs)
 
-    output_stream = create_output_stream("speaker", sample_rate=16000)
+    # Build output stream kwargs with defaults
+    output_kwargs = {"sample_rate": DEFAULT_SAMPLE_RATE, **args.output_kwargs}
+    output_stream = create_output_stream(args.output_type, **output_kwargs)
 
     scenario = create_scenario(args.scenario, input_stream, output_stream, config, args)
     try:

@@ -15,7 +15,7 @@ class FileOutputStream(AbstractAudioOutputStream):
 
     def __init__(
         self,
-        output_path: str | Path,
+        file_path: str | Path,
         sample_rate: int = 16000,
         channels: int = 1,
     ):
@@ -23,17 +23,17 @@ class FileOutputStream(AbstractAudioOutputStream):
         Initialize file output stream.
 
         Args:
-            output_path: Path where audio file will be saved
+            file_path: Path where audio file will be saved
             sample_rate: Audio sample rate
             channels: Number of audio channels
         """
         super().__init__(sample_rate, channels)
-        self.output_path = Path(output_path)
+        self.file_path = Path(file_path)
         self._audio_chunks: list[np.ndarray] = []
         self._is_closed = False
 
         # Ensure output directory exists
-        self.output_path.parent.mkdir(parents=True, exist_ok=True)
+        self.file_path.parent.mkdir(parents=True, exist_ok=True)
 
     def play_chunk(self, audio_data: np.ndarray) -> None:
         """Add audio chunk to buffer (non-blocking).
@@ -87,7 +87,7 @@ class FileOutputStream(AbstractAudioOutputStream):
     def _save_to_file(self) -> None:
         """Save all buffered audio chunks to the output file."""
         if not self._audio_chunks:
-            # print(f"Warning: No audio chunks to save to {self.output_path}")
+            # print(f"Warning: No audio chunks to save to {self.file_path}")
             return
 
         # Concatenate all chunks
@@ -102,7 +102,7 @@ class FileOutputStream(AbstractAudioOutputStream):
             audio_data = np.tile(audio_data.reshape(-1, 1), (1, self.channels))
 
         # Use shared save_audio utility
-        save_audio(audio_data, self.output_path, self.sample_rate)
+        save_audio(audio_data, self.file_path, self.sample_rate)
 
     def get_total_duration(self) -> float:
         """Get total duration of buffered audio in seconds.

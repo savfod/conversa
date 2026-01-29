@@ -58,7 +58,7 @@ def test_speaker_resumable_playback(mock_sd):
 def test_file_resumable_playback(tmp_path):
     """Test FileOutputStream supports play -> stop -> play."""
     output_file = tmp_path / "test.wav"
-    stream = FileOutputStream(output_path=output_file)
+    stream = FileOutputStream(file_path=output_file)
     audio_data = np.zeros(1600, dtype=np.float32)
 
     stream.play_chunk(audio_data)
